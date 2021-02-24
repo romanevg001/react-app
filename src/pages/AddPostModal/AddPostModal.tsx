@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Formik, FormikHelpers} from 'formik';
+import {Formik, ErrorMessage} from 'formik';
 import * as yup from 'yup';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -45,6 +45,10 @@ export default class AddPostModal extends Component<AddPostModalModel> {
     this.props.emitter.next(false);
   }
 
+  handleChange(e: any) {
+    console.log(e)
+  }
+
   render() {
     return (
       <Formik
@@ -55,7 +59,7 @@ export default class AddPostModal extends Component<AddPostModalModel> {
       >
         {({
           handleSubmit,
-          handleChange,
+          handleChange=this.handleChange.bind(this),
           handleBlur,
           values={...new AddPostModalState().initialFormValues },
           touched,
@@ -76,6 +80,7 @@ export default class AddPostModal extends Component<AddPostModalModel> {
                     value={values.title}
                     isValid={touched.title && !errors.title}
                   />
+                  <ErrorMessage name="title" component="div" className="invalid-feedback" />
                 </Form.Group>
                 <Form.Group controlId="postedit.body">
                   <Form.Label>Post body</Form.Label>
