@@ -1,8 +1,12 @@
 import { Subject} from 'rxjs';
 
 
-export interface AddPostModalState {
-  isShow: boolean;
+export class AddPostModalState {
+  isShow = false;
+  initialFormValues = {
+    title: '',
+    body: ''
+  }
 }
 
 export interface AddPostModalModel {

@@ -1,5 +1,5 @@
 import React, {Component} from 'react';
-import {Formik} from 'formik';
+import {Formik, FormikHelpers} from 'formik';
 import * as yup from 'yup';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -10,18 +10,22 @@ import {AddPostModalModel, AddPostModalState} from './add-post-modal.model';
 
 
 export default class AddPostModal extends Component<AddPostModalModel> {
-  state: AddPostModalState = {
-    isShow: false
-  }
+  state: AddPostModalState = new AddPostModalState();
   
   schema = yup.object().shape({
-    title: yup.string().required(),
+    title: yup.string().required().max(200),
     body: yup.string().required()
   });
 
   componentDidMount() {
+    console.log('AddPostModal did mount')
     this.props.emitter.subscribe(val => {
+      if(val === false) {
+        this.setState(new AddPostModalState());
+      }
       this.setState({isShow: val});
+      console.log(this.state)
+
     })
   }
 
@@ -37,7 +41,8 @@ export default class AddPostModal extends Component<AddPostModalModel> {
   };
 
   handleClose():void {
-   this.props.emitter.next(false);
+    console.log(this.state)
+    this.props.emitter.next(false);
   }
 
   render() {
@@ -45,16 +50,14 @@ export default class AddPostModal extends Component<AddPostModalModel> {
       <Formik
         validationSchema={this.schema}
         onSubmit={this.handleSubmit.bind(this)}
-        initialValues={{
-          title: '',
-          body: ''
-        }}
+        initialValues={this.state.initialFormValues}
+        
       >
         {({
           handleSubmit,
           handleChange,
           handleBlur,
-          values,
+          values={...new AddPostModalState().initialFormValues },
           touched,
           isValid,
           errors,
@@ -66,7 +69,7 @@ export default class AddPostModal extends Component<AddPostModalModel> {
             <Form noValidate onSubmit={handleSubmit}>
               <Modal.Body>
                 <Form.Group controlId="postedit.title">
-                  <Form.Label>Post title</Form.Label>
+                  <Form.Label>Post title - {values.title}</Form.Label>
                   <Form.Control type="text" 
                     name="title" placeholder="Post title" 
                     onChange={handleChange}

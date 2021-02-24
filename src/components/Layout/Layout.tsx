@@ -6,6 +6,7 @@ import Header from '../Header/Header';
 export default class Layout extends Component {
 
     render () {
+        console.log(this.props)
         return (
           <Fragment>
               <Header />
