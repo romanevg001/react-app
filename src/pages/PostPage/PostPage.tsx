@@ -9,6 +9,7 @@ import { postsStore } from '../MainPage/state/main.store';
 import { PostModel } from '../../models/posts.model';
 import {mainService} from '../MainPage/main.service';
 import styles from './PostPage.module.scss';
+import Popup from '../Popup';
 
 
 export default class PostPage extends Component<PostPageComponentModel> {
@@ -98,6 +99,7 @@ export default class PostPage extends Component<PostPageComponentModel> {
             )
           }
           
+          <Popup />
           
         </div>
 
