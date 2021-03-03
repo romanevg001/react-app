@@ -1,37 +1,56 @@
-import { Observable, of } from 'rxjs';
+import { EMPTY, Observable, of, defer } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { ajax } from 'rxjs/ajax';
 import { PostModel } from '../../models/posts.model';
 import { PostsStore, postsStore } from './state/main.store';
 import { PostsQuery, postsQuery } from './state/main.query';
+import axios from 'axios';
+
+axios.defaults.baseURL = 'https://jsonplaceholder.typicode.com/';
+axios.defaults.headers.common['Authorization'] = 'Barer kjdsfsdkjfjsdlfk'
+axios.interceptors.response.use(res => {
+  console.log(res)
+
+  return res;
+}, err => {
+  console.log(err)
+})
 
 export class MainService  {
-  private api = 'https://jsonplaceholder.typicode.com/posts';
+
+  private api = 'posts';
 
   constructor(
     private postsStore: PostsStore,
-    private postsQuery: PostsQuery,
-  ) {}
+    private postsQuery: PostsQuery
+  ) {
+  }
 
   getPosts(): Observable<PostModel[]> {
     const posts = this.postsQuery.getAll();
     if (posts.length) {return of(posts)}
+    return defer(() => axios.get(this.api)).pipe(
+      map((res: any) => {
+        this.postsStore.set(res.data);
+        return res.data;
+      }),
+      catchError(error => {
+        return EMPTY;
+      })
+    ) as Observable<PostModel[]>; 
+    /* 
     return ajax({
       url: this.api,
-      method: 'GET',
-      headers: {
-        'Content-Type': 'application/json',
-        'rxjs-custom-header': 'Rxjs'
-      },
+      method: 'GET'
     }).pipe(
-      map(res => {
+      map((res: any) => {
         this.postsStore.set(res.response);
         return res.response;
       }),
       catchError(error => {
-        return of([]);
+        return EMPTY;
       })
-    ) as Observable<PostModel[]>;
+    ) as Observable<PostModel[]>; */
   }
 
 
