@@ -98,9 +98,6 @@ export default class PostPage extends Component<PostPageComponentModel> {
               </Fragment>
             )
           }
-          
-          <Popup />
-          
         </div>
 
     );

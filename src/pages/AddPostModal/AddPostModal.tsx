@@ -1,5 +1,5 @@
 import React, {Component, useState, } from 'react';
-import {Formik, useField, useFormikContext} from 'formik';
+import {Formik, useField, useFormikContext, withFormik} from 'formik';
 import * as yup from 'yup';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
@@ -20,8 +20,75 @@ export enum EnumJobStationingType {
   MANUAL = 'MANUAL'
 }
 
+const MyInnerForm = (props: any) => {
+  const {
+    values,
+    touched,
+    errors,
+    dirty,
+    isSubmitting,
+    handleChange,
+    handleBlur,
+    handleSubmit,
+    handleReset,
+    setFieldValue
+  } = props;
+  return (
+    <form onSubmit={handleSubmit}>
+      <label htmlFor="email" style={{ display: "block" }}>
+        Email
+      </label>
 
+      <label>
+        <input
+          type="radio"
+          name="test"
+          value="a"
+          checked={values.test === "a"}
+          onChange={() => setFieldValue("test", "a")}
+        />a
+      </label>
+      <label>
+        <input
+          type="radio"
+          name="test"
+          value="b"
+          checked={values.test === "b"}
+          onChange={() => setFieldValue("test", "b")}
+        />b
+      </label>
 
+      <button
+        type="button"
+        className="outline"
+        onClick={handleReset}
+        disabled={!dirty || isSubmitting}
+      >
+        Reset
+      </button>
+      <button type="submit" disabled={isSubmitting}>
+        Submit
+      </button>
+
+    </form>
+  );
+};
+
+export const EnhancedForm = withFormik({
+  mapPropsToValues: () => ({ email: "", test: "" }),
+  validationSchema: yup.object().shape({
+    email: yup.string()
+      .email("Invalid email address")
+      .required("Email is required!")
+  }),
+  handleSubmit: (values, { setSubmitting }) => {
+    setTimeout(() => {
+      alert(JSON.stringify(values, null, 2));
+      setSubmitting(false);
+    }, 1000);
+  },
+  displayName: "BasicForm" // helps with React DevTools
+})(MyInnerForm);
 
 export  const MyField = (props: any) => {
   const {
@@ -100,8 +167,15 @@ export default class AddPostModal extends Component<AddPostModalModel> {
     console.log('handleChange:', e)
   }
 
+  handleChangeRadio(e: any) {
+    console.log('handleChangeRadio:', e)
+   // value: "CEILING"
+  }
+
   render() {
     return (
+      <>
+      <EnhancedForm />
       <Formik
         validationSchema={this.schema}
         onSubmit={this.handleSubmit.bind(this)}
@@ -112,7 +186,7 @@ export default class AddPostModal extends Component<AddPostModalModel> {
           handleSubmit,
           handleChange=this.handleChange.bind(this),
           handleBlur,
-          values={...new AddPostModalFormModel() },
+          values,
           touched,
           isValid,
           errors,
@@ -181,7 +255,7 @@ export default class AddPostModal extends Component<AddPostModalModel> {
                     isValid={touched.body && !errors.body}
                     />
                 </Form.Group>
-
+                {values.jobType}
                 <MyField name="textC" />
                 
               </Modal.Body>
@@ -193,6 +267,7 @@ export default class AddPostModal extends Component<AddPostModalModel> {
           </Modal>
         )}
       </Formik>
+      </>
     );
   }
 }
