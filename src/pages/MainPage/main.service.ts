@@ -29,6 +29,7 @@ export class MainService  {
   getPosts(): Observable<PostModel[]> {
     const posts = this.postsQuery.getAll();
     if (posts.length) {return of(posts)}
+
     return defer(() => axios.get(this.api)).pipe(
       map((res: any) => {
         this.postsStore.set(res.data);
@@ -41,13 +42,15 @@ export class MainService  {
     /* 
     return ajax({
       url: this.api,
-      method: 'GET'
+      method: 'GET',
+      option: this.ajaxServise.getDefaultOption();
     }).pipe(
       map((res: any) => {
         this.postsStore.set(res.response);
         return res.response;
       }),
       catchError(error => {
+        this.ajaxServise.interceptor(error)
         return EMPTY;
       })
     ) as Observable<PostModel[]>; */

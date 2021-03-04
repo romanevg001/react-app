@@ -1,4 +1,4 @@
-import React, {Component, useState, } from 'react';
+import React, {Component, useState, useEffect } from 'react';
 import {Formik, useField, useFormikContext, withFormik} from 'formik';
 import * as yup from 'yup';
 import Modal from 'react-bootstrap/Modal';
@@ -19,6 +19,18 @@ export enum EnumJobStationingType {
   AUTO = 'AUTO',
   MANUAL = 'MANUAL'
 }
+
+
+const Cockpit = (props: any) => {
+  useEffect(() => {
+    console.log('cockpit render')
+    // call http
+  },[props.person]);
+  return (
+    <p>f</p>
+  )
+}
+
 
 const MyInnerForm = (props: any) => {
   const {
@@ -176,15 +188,16 @@ export default class AddPostModal extends Component<AddPostModalModel> {
     return (
       <>
       <EnhancedForm />
+      <Cockpit />
       <Formik
         validationSchema={this.schema}
         onSubmit={this.handleSubmit.bind(this)}
+    //    onChange={this.handleChange}
         initialValues={this.state.initialFormValues}
-        
       >
         {({
           handleSubmit,
-          handleChange=this.handleChange.bind(this),
+          handleChange,
           handleBlur,
           values,
           touched,
@@ -195,7 +208,7 @@ export default class AddPostModal extends Component<AddPostModalModel> {
             <Modal.Header closeButton>
               <Modal.Title>Add post</Modal.Title>
             </Modal.Header>
-            <Form  noValidate validated={this.state.validated} onSubmit={handleSubmit}>
+            <Form  noValidate validated={this.state.validated} onSubmit={handleSubmit} onChange={this.handleChange.bind(this, values)}>
               <Modal.Body>
                 <Form.Group controlId="postedit.title">
                   <Form.Label>Post title</Form.Label>
@@ -211,7 +224,7 @@ export default class AddPostModal extends Component<AddPostModalModel> {
                 </Form.Group>
                 <Form.Group controlId="postedit.jobType">
                   <Form.Label>Job Type</Form.Label>
-                  <Form.Group id="formGridCheckbox" as={Row}>
+                  <Form.Group id="formGridCheckbox" as={Row} onChange={handleChange}>
                   {
                     Object.keys(this.enumJobType).map(item =>(
                     <Col key={item}>
