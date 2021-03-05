@@ -1,4 +1,6 @@
 import React, {Component, useState, useEffect } from 'react';
+import {Formik, useField, useFormikContext, withFormik} from 'formik';
+import * as yup from 'yup';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
 import Row from 'react-bootstrap/Row';
@@ -7,7 +9,6 @@ import Form from 'react-bootstrap/Form';
 import { PostModel } from '../../models/posts.model';
 import {mainService} from '../MainPage/main.service';
 import {AddPostModalModel, AddPostModalState, AddPostModalFormModel} from './add-post-modal.model';
-import { Validators, FormGenerator} from "react-reactive-form";
 
 export enum EnumJobType {
   CEILING = 'CEILING',
@@ -20,51 +21,107 @@ export enum EnumJobStationingType {
 }
 
 
-const TextArea = ({ handler,  touched, hasError, meta  }: any) => (
-  <Form.Group>
-    <Form.Label>{meta.label}</Form.Label>
-    <Form.Control as="textarea" rows={3} {...handler("textarea")} />
-    <Form.Control.Feedback type="invalid">
-      {
-        touched
-        && hasError("required")
-        && `${meta.label} is required`
-      }
-    </Form.Control.Feedback> 
-  </Form.Group>
-);
+// const Cockpit = (props: any) => {
+//   useEffect(() => {
+//     console.log('cockpit render')
+//     // call http
+//   },[props.person]);
+//   return (
+//     <p>f</p>
+//   )
+// }
 
-const TextInput = ({ handler,  touched, hasError, meta }: any) => (
-  <Form.Group>
-    <Form.Label>{meta.label}</Form.Label>
-    <Form.Control {...handler("text")} isInvalid={!!(touched && hasError("required"))}
-                    isValid={touched && !hasError("required")}
-                     />
-    <Form.Control.Feedback type="invalid">
-      {
-        touched
-        && hasError("required")
-        && `${meta.label} is required`
-      }
-    </Form.Control.Feedback> 
-  </Form.Group>
-);
 
-const RadioInput = ({ handler,  touched, hasError, meta, list }: any) => (
-  <Form.Group>
-      <Form.Label>{meta.label}</Form.Label>
-      <Form.Group id="formGridCheckbox" as={Row}>
-      {
-        list.map((item: any) =>(
-        <Col key={item}>
-          <Form.Check  {...handler("radio")} />
-        </Col>
-        ))
-      }
-      </Form.Group>
-  </Form.Group>
-);
+// const MyInnerForm = (props: any) => {
+//   const {
+//     values,
+//     touched,
+//     errors,
+//     dirty,
+//     isSubmitting,
+//     handleChange,
+//     handleBlur,
+//     handleSubmit,
+//     handleReset,
+//     setFieldValue
+//   } = props;
+//   return (
+//     <form onSubmit={handleSubmit}>
+//       <label htmlFor="email" style={{ display: "block" }}>
+//         Email
+//       </label>
 
+//       <label>
+//         <input
+//           type="radio"
+//           name="test"
+//           value="a"
+//           checked={values.test === "a"}
+//           onChange={() => setFieldValue("test", "a")}
+//         />a
+//       </label>
+//       <label>
+//         <input
+//           type="radio"
+//           name="test"
+//           value="b"
+//           checked={values.test === "b"}
+//           onChange={() => setFieldValue("test", "b")}
+//         />b
+//       </label>
+
+//       <button
+//         type="button"
+//         className="outline"
+//         onClick={handleReset}
+//         disabled={!dirty || isSubmitting}
+//       >
+//         Reset
+//       </button>
+//       <button type="submit" disabled={isSubmitting}>
+//         Submit
+//       </button>
+
+//     </form>
+//   );
+// };
+
+// export const EnhancedForm = withFormik({
+//   mapPropsToValues: () => ({ email: "", test: "" }),
+//   validationSchema: yup.object().shape({
+//     email: yup.string()
+//       .email("Invalid email address")
+//       .required("Email is required!")
+//   }),
+//   handleSubmit: (values, { setSubmitting }) => {
+//     setTimeout(() => {
+//       alert(JSON.stringify(values, null, 2));
+//       setSubmitting(false);
+//     }, 1000);
+//   },
+//   displayName: "BasicForm" // helps with React DevTools
+// })(MyInnerForm);
+
+// export  const MyField = (props: any) => {
+//   const {
+//     values: { jobStationingType },
+//     touched,
+//     setFieldValue,
+//   } = useFormikContext<AddPostModalFormModel>();
+//   const [field, meta] = useField(props);
+
+//   React.useEffect(() => {
+//     console.log(jobStationingType)
+
+//   }, [jobStationingType, touched.jobStationingType, setFieldValue, props.name]);
+
+//   return (
+//     <>
+//       <input {...props} {...field} />
+//       {!!meta.touched && !!meta.error && <div>{meta.error}</div>}
+//     </>
+//   );
+// };
 
 
 export default class AddPostModal extends Component<AddPostModalModel> {
@@ -72,8 +129,11 @@ export default class AddPostModal extends Component<AddPostModalModel> {
 
   enumJobStationingType = EnumJobStationingType;
   enumJobType = EnumJobType;
-  loginForm: any;
   
+  schema = yup.object().shape({
+    title: yup.string().required('Required').max(20, 'Too Long!')
+    //body: yup.string().required()
+  });
 
   componentDidMount() {
     console.log('AddPostModal did mount',Object.values(this.enumJobType))
@@ -107,80 +167,41 @@ export default class AddPostModal extends Component<AddPostModalModel> {
     this.props.emitter.next(false);
   }
 
-  handleReset= () => {
-    this.loginForm.reset();
-  }
-  handleSubmit= (e: any) => {
-      e.preventDefault();
-      console.log("Form values", this.loginForm.value);
+  handleChange(e: any) {
+    console.log('handleChange:', e)
   }
 
-  setForm = (form: any) => {
-    this.loginForm = form;
-    this.loginForm.meta = {
-        handleReset: this.handleReset
-    }
-  }
-
-
-  fieldConfig = {
-    controls: {
-        title: {
-            options: {
-                validators: Validators.required
-            },
-            render: TextInput,
-            meta: { label: "Post title" }
-        },
-        jobType: {
-          render: RadioInput,
-          meta: { label: "Job Type" }
-        },
-        body: {
-            options: {
-                validators: Validators.required
-            },
-            render: TextArea,
-            meta: { label: "Post body" }
-        },
-       
-        $field_0: {
-            isStatic: false,
-            render: ({ invalid, meta: { handleReset } }: any) => (
-                <div>
-                    <button
-                      type="button"
-                      onClick={handleReset}
-                    >
-                      Reset
-                    </button>
-                    <button
-                      type="submit"
-                      disabled={invalid}
-                    >
-                      Submit
-                    </button>
-                </div>
-            )
-        }
-    },
+  handleChangeRadio(e: any) {
+    console.log('handleChangeRadio:', e)
+   // value: "CEILING"
   }
 
   render() {
     return (
       <>
+      <Formik
+        validationSchema={this.schema}
+        onSubmit={this.handleSubmit.bind(this)}
+    //    onChange={this.handleChange}
+        initialValues={this.state.initialFormValues}
+      >
+        {({
+          handleSubmit,
+          handleChange,
+          handleBlur,
+          values,
+          touched,
+          isValid,
+          errors,
+        }) => (
           <Modal show={this.state.isShow} onHide={this.handleClose.bind(this)}>
             <Modal.Header closeButton>
               <Modal.Title>Add post</Modal.Title>
             </Modal.Header>
-            <form onSubmit={this.handleSubmit}>
+            <Form  noValidate validated={this.state.validated} onSubmit={handleSubmit} onChange={this.handleChange.bind(this, values)}>
               <Modal.Body>
-                <FormGenerator
-                    onMount={this.setForm}
-                    fieldConfig={this.fieldConfig}
-                />
-
-                {/* <Form.Group controlId="postedit.title">
+                
+                <Form.Group controlId="postedit.title">
                   <Form.Label>Post title</Form.Label>
                   <Form.Control type="text" 
                     name="title" placeholder="Post title" 
@@ -189,9 +210,10 @@ export default class AddPostModal extends Component<AddPostModalModel> {
                     isInvalid={!!( errors.title)}
                     isValid={touched.title && !errors.title}
                   />
+                 / {touched.title}/
                   <Form.Control.Feedback type="invalid">{errors.title}</Form.Control.Feedback>
-                </Form.Group> */}
-{/* 
+                </Form.Group>
+
                 <Form.Group controlId="postedit.jobType">
                   <Form.Label>Job Type</Form.Label>
                   <Form.Group id="formGridCheckbox" as={Row} onChange={handleChange}>
@@ -228,8 +250,8 @@ export default class AddPostModal extends Component<AddPostModalModel> {
                     ))
                   }
                   </Form.Group>
-                </Form.Group> */}
-                {/* <Form.Group controlId="postedit.body">
+                </Form.Group>
+                <Form.Group controlId="postedit.body">
                   <Form.Label>Post body</Form.Label>
                   <Form.Control as="textarea" rows={3}
                     name="body"
@@ -237,17 +259,17 @@ export default class AddPostModal extends Component<AddPostModalModel> {
                     value={values.body}
                     isValid={touched.body && !errors.body}
                     />
-                </Form.Group> */}
-            
+                </Form.Group>
+                {values.jobType}
               </Modal.Body>
               <Modal.Footer>
                 <Button variant="primary" type="submit" className="mr-3">Save</Button>
                 <Button variant="secondary" type="button" onClick={this.handleClose.bind(this)}>Cancel</Button>
               </Modal.Footer>
-            </form>
+            </Form>
           </Modal>
-      
- 
+        )}
+      </Formik>
       </>
     );
   }
