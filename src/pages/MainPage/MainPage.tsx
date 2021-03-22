@@ -32,6 +32,7 @@ export default class MainPageComponent extends Component<MainPageComponentModel>
     return (
 
         <div className="main-page">
+          {/* <SimpleForm></SimpleForm> */}
           <AddPostModal emitter={this.addPostModalEmitter} updateList={this.loadList.bind(this)}></AddPostModal>
           <h2>mainpage</h2>
           <Button onClick={this.openAddPostModal.bind(this)}>Add post</Button>
