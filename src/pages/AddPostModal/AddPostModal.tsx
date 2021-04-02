@@ -1,8 +1,8 @@
 import React, {Component, useState, useEffect } from 'react';
+import {distinctUntilChanged, map } from 'rxjs/operators';
+import {Observable, of, combineLatest} from 'rxjs';
 import Modal from 'react-bootstrap/Modal';
 import Button from 'react-bootstrap/Button';
-import { PostModel } from '../../models/posts.model';
-import {mainService} from '../MainPage/main.service';
 import {AddPostModalModel, AddPostModalState, AddPostModalFormModel} from './add-post-modal.model';
 import {
   Validators, FormBuilder, FieldControl,
@@ -33,9 +33,51 @@ export default class AddPostModal extends Component<AddPostModalModel> {
   addPostForm = FormBuilder.group({
     title: "",
     jobType: EnumJobType.CEILING,
-    // jobStationingType: "male",
+    jobStationing: EnumJobStationingType.AUTO,
     body: ""
   });
+
+  constructor(props: any) {
+    super(props);
+
+    this.addPostForm.valueChanges.subscribe((value: any) => {
+      console.log(value)
+      // const val = { ...value };
+      // if (val.jobStationing) {
+      //   this.job.refSetup.type = val.jobStationing;
+      //   delete val.jobStationing;
+      // }
+      // delete val.fileCSV;
+      // this.job = { ...this.job, ...val };
+    });
+
+    this.addPostForm.valueChanges
+    // .pipe(
+    //   tap(v => console.log(v)),
+    //   distinctUntilChanged((prev: any, curr: any) => {
+    //     return prev.type === curr.type && prev.jobStationing === curr.jobStationing;
+    //   })
+    // )
+    .subscribe((value: any) => {
+      console.log(value)
+      // if (this.csvFile) {
+      //  // this.validateAndUploadCsv(value);
+      // }
+    });
+
+    const jobStationing = this.addPostForm.get('jobStationing');
+    const type = this.addPostForm.get('jobType');
+
+    type.valueChanges.subscribe((value: EnumJobType) => {
+      if (EnumJobType[value] === EnumJobType.OTHER) {
+        jobStationing.patchValue(EnumJobStationingType.AUTO);
+        jobStationing.disable();
+      } else{
+        jobStationing.enable();
+      }
+    });
+
+  }
 
   componentDidMount() {
     console.log('AddPostModal did mount',Object.values(this.enumJobType))
@@ -90,15 +132,8 @@ export default class AddPostModal extends Component<AddPostModalModel> {
                   <FieldControl name="title" render={TextInput} meta={{ label: "Post title"}} />
                   <FieldControl name="body"  meta={{ label: "Body"}} render={TextArea}/>
                   <FieldControl name="jobType"  meta={{ label: "Job Type", list: EnumJobType}} render={RadioInput}/>
+                  <FieldControl name="jobStationing"  meta={{ label: "Job Stationing", list: EnumJobStationingType}} render={RadioInput}/>
 
-{/* 
-                  <FieldControl name="gender" render={GenderRadio} />
-
-                  <FieldControl name="nationality" render={SelectBox} />
-
-                  <FieldControl name="notes" render={TextArea} />
-
-                  <FieldControl name="terms" render={Checkbox} /> */}
 
                   <div>
                     <button
